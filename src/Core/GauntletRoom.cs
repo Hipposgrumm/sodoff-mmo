@@ -4,17 +4,20 @@ using sodoffmmo.Data;
 namespace sodoffmmo.Core;
 public class GauntletRoom : Room {
     static object NextRoomLock = new object();
-    static GauntletRoom? NextRoom = null;
+    static Dictionary<string, GauntletRoom?> NextRoom = new();
 
-    public static GauntletRoom Get() {
+    public static GauntletRoom Get(string roomgroup) {
         lock(NextRoomLock) {
-            if (NextRoom != null && NextRoom.ClientsCount == 1) {
-                var ret = NextRoom!;
-                NextRoom = null;
+            if (
+                NextRoom.TryGetValue(roomgroup, out var ret) &&
+                ret.ClientsCount == 1
+            ) {
+                NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
                 return ret;
             } else {
-                NextRoom = new GauntletRoom();
-                return NextRoom!;
+                var newRoom = new GauntletRoom();
+                NextRoom[roomgroup] = newRoom;
+                return newRoom;
             }
         }
     }
@@ -118,10 +121,10 @@ public class GauntletRoom : Room {
 
     static object joinLock = new object();
 
-    static public void Join(Client client, GauntletRoom? room = null) {
+    static public void Join(Client client, string roomgroup, GauntletRoom? room = null) {
         lock(joinLock) {
             if (room is null)
-                room = GauntletRoom.Get();
+                room = GauntletRoom.Get(roomgroup);
 
             client.SetRoom(room);
             room.AddPlayer(client); // client will be not removed from GauntletRoom.players ... after remove all client from room whole GauntletRoom.players will be removed

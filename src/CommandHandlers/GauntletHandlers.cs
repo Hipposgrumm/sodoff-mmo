@@ -12,7 +12,8 @@ namespace sodoffmmo.CommandHandlers;
 class GauntletCreateRoomHandler : CommandHandler
 {
     public override Task Handle(Client client, NetworkObject receivedObject) {
-        GauntletRoom.Join(client);
+        NetworkObject p = receivedObject.Get<NetworkObject>("p");
+        GauntletRoom.Join(client, p.Get<string>("RG"));
         return Task.CompletedTask;
     }
 }
@@ -22,7 +23,8 @@ class GauntletCreateRoomHandler : CommandHandler
 class GauntletJoinRoomHandler : CommandHandler
 {
     public override Task Handle(Client client, NetworkObject receivedObject) {
-        GauntletRoom.Join(client);
+        NetworkObject p = receivedObject.Get<NetworkObject>("p");
+        GauntletRoom.Join(client, p.Get<string>("RG"));
         return Task.CompletedTask;
     }
 }
