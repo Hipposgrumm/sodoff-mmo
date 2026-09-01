@@ -9,7 +9,7 @@ public class GauntletRoom : Room {
     public static GauntletRoom Get(string roomgroup) {
         lock(NextRoomLock) {
             if (
-                NextRoom.TryGetValue(roomgroup, out var ret) &&
+                NextRoom.TryGetValue(roomgroup, out var ret) && ret != null &&
                 ret.ClientsCount == 1
             ) {
                 NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
