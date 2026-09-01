@@ -21,6 +21,7 @@ public class GauntletRoom : Room {
 
     public GauntletRoom() : base (null, "GauntletDO", true) {
         base.RoomVariables.Add(NetworkArray.VlElement("IS_RACE_ROOM", true));
+        Name = Name.Replace('_', '-');
     }
 
     class Status {

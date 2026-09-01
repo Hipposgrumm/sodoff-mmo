@@ -11,7 +11,7 @@ public class Room {
     protected object roomLock = new object();
 
     public int Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; protected set; }
     public string Group { get; private set; }
     public bool AutoRemove { get; private set; }
     public bool IsRemoved { get; private set; } = false;
