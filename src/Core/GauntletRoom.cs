@@ -2,7 +2,7 @@ using System;
 using sodoffmmo.Data;
 
 namespace sodoffmmo.Core;
-public class GauntletRoom : Room {
+public class GauntletRoom : HeadToHeadRoom {
     static object NextRoomLock = new object();
     static Dictionary<string, GauntletRoom?> NextRoom = new();
 
@@ -22,71 +22,26 @@ public class GauntletRoom : Room {
         }
     }
 
-    public GauntletRoom() : base (null, "GauntletDO", true) {
+    public GauntletRoom() : base ("GauntletDO") {
         base.RoomVariables.Add(NetworkArray.VlElement("IS_RACE_ROOM", true));
-        Name = Name.Replace('_', '-');
+        Name = Name.Replace('_', '-'); // Fix for Math Blaster (it doesn't like underscores)
     }
 
-    class Status {
-        public string uid;
-        public bool isReady = false;
-        public string resultA = "";
-        public string resultB = "";
+    protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
+        player.Value.uid,
+        player.Value.isReady.ToString(),
+        "1" // TODO this should be player gender
+    ];
 
-        public Status(string uid) {
-            this.uid = uid;
-        }
-    }
+    protected override string[] AddDataJoin() => [
+        base.Id.ToString(),
+        "2" // Course
+    ];
 
-    private Dictionary<Client, Status> players = new();
-
-    public void AddPlayer(Client client) {
-        players[client] = new Status(client.PlayerData.Uid);
-    }
-
-    public void SetPlayerReady(Client client, bool status = true) {
-        players[client].isReady = status;
-    }
-
-    public int GetReadyCount() {
-        int count = 0;
-        foreach(var player in players) {
-            if (player.Value.isReady) ++count;
-        }
-        return count;
-    }
-
-    public void SendUJR() {
-        // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["UJR","287997","2","f66cc516-7ea3-40a5-9021-01ff8f290123","false","2","03a3ad99-87a5-4af4-8966-0b2733a05e0f","false","1"]},"r":287997}}
-        List<string> info = new();
-        info.Add("UJR"); // User Joined Room
-        info.Add(base.Id.ToString());
-        info.Add("2");
-        foreach(var player in players) {
-            info.Add(player.Value.uid);
-            info.Add(player.Value.isReady.ToString());
-            info.Add("1"); // TODO this should be player gender
-        }
-        NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
-
-        Send(packet);
-    }
-
-    public void SendPA(Client client) {
-        // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["UJR","287997","2","f66cc516-7ea3-40a5-9021-01ff8f290123","false","2","03a3ad99-87a5-4af4-8966-0b2733a05e0f","false","1"]},"r":287997}}
-        List<string> info = new();
-        info.Add("PA"); // Play Again
-        info.Add(base.Id.ToString());
-        info.Add("1");
-        foreach(var player in players) {
-            info.Add(player.Value.uid);
-            info.Add(player.Value.isReady.ToString());
-            info.Add("1"); // TODO this should be player gender
-        }
-        NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
-
-        client.Send(packet);
-    }
+    protected override string[] AddDataPlayAgain() => [
+        base.Id.ToString(),
+        "1" // Course
+    ];
 
     public bool ProcessResult(Client client, string resultA, string resultB) {
         lock (base.roomLock) {
@@ -121,11 +76,21 @@ public class GauntletRoom : Room {
 
     static object joinLock = new object();
 
-    static public void Join(Client client, string roomgroup, GauntletRoom? room = null) {
+    // Keeping this here in case changing it breaks something.
+    static public void Join(Client client, GauntletRoom? room = null) {
         lock(joinLock) {
             if (room is null)
-                room = GauntletRoom.Get(roomgroup);
+                room = GauntletRoom.Get("GauntletDO");
 
+            client.SetRoom(room);
+            room.AddPlayer(client);
+            room.SendUJR();
+        }
+    }
+
+    static public void Join(Client client, string roomgroup) {
+        lock(joinLock) {
+            GauntletRoom room = GauntletRoom.Get(roomgroup);
             client.SetRoom(room);
             room.AddPlayer(client); // client will be not removed from GauntletRoom.players ... after remove all client from room whole GauntletRoom.players will be removed
             room.SendUJR();
