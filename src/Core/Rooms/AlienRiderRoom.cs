@@ -50,10 +50,9 @@ public class AlienRiderRoom : HeadToHeadRoom {
 
     static object joinLock = new object();
 
-    static public void Join(Client client, string roomgroup, AlienRiderRoom? room = null) {
+    static public void Join(Client client, string roomgroup) {
         lock(joinLock) {
-            if (room is null)
-                room = AlienRiderRoom.Get(roomgroup);
+            AlienRiderRoom room = AlienRiderRoom.Get(roomgroup);
 
             client.SetRoom(room);
             room.AddPlayer(client);

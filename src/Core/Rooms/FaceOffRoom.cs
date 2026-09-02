@@ -1,0 +1,96 @@
+using System;
+using sodoffmmo.Data;
+
+namespace sodoffmmo.Core;
+
+public class FaceOffRoom : HeadToHeadRoom {
+    static object NextRoomLock = new object();
+    static Dictionary<string, FaceOffRoom?> NextRoom = new();
+
+    public static FaceOffRoom Get(string roomgroup) {
+        lock(NextRoomLock) {
+            if (
+                NextRoom.TryGetValue(roomgroup, out var ret) && ret != null &&
+                ret.ClientsCount == 1
+            ) {
+                NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
+                return ret;
+            } else {
+                var newRoom = new FaceOffRoom(roomgroup);
+                NextRoom[roomgroup] = newRoom;
+                return newRoom;
+            }
+        }
+    }
+
+    protected class FaceOffStatus : Status {
+        public string? trick;
+
+        public FaceOffStatus(string uid) : base(uid) {}
+    }
+
+    public FaceOffRoom(string roomname) : base(roomname) {}
+    
+    public override void AddPlayer(Client client) {
+        players[client] = new FaceOffStatus(client.PlayerData.Uid);
+    }
+
+    protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
+        player.Value.uid,
+        player.Value.isReady.ToString(),
+        player.Key.PlayerData.DiplayName
+    ];
+
+    protected override string[] AddDataJoin() => [];
+    protected override string[] AddDataPlayAgain() => [];
+
+    public void SelectTrick(Client client, string trickname) {
+        lock (base.roomLock) {
+            var clientStatus = (players[client] as FaceOffStatus)!;
+            clientStatus.trick = trickname;
+            
+            if (players.All(p => (p.Value as FaceOffStatus)!.trick != null)) {
+                List<string> info = new();
+                info.Add("FOTP");
+                foreach (var player in players) {
+                    var status = (player.Value as FaceOffStatus)!;
+                    info.Add(status.uid);
+                    info.Add(status.trick!);
+                    
+                    // Prepare for next turn. 
+                    status.trick = null;
+                }
+                NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
+                
+                Send(packet);
+            }
+        }
+    }
+
+    public bool ProcessResult(Client client) {
+        lock (base.roomLock) {
+            List<string> info = new();
+            info.Add("GC");
+            info.Add(client.PlayerData.Uid);
+            foreach(var player in players) {
+                info.Add(player.Value.uid);
+            }
+            NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
+
+            Send(packet);
+            return true;
+        }
+    }
+
+    static object joinLock = new object();
+
+    static public void Join(Client client, string roomgroup) {
+        lock(joinLock) {
+            FaceOffRoom room = FaceOffRoom.Get(roomgroup);
+
+            client.SetRoom(room);
+            room.AddPlayer(client);
+            room.SendUJR();
+        }
+    }
+}

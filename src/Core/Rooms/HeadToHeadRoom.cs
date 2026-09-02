@@ -14,8 +14,6 @@ public abstract class HeadToHeadRoom : Room {
     protected class Status {
         public string uid;
         public bool isReady = false;
-        public string resultA = "";
-        public string resultB = "";
 
         public Status(string uid) {
             this.uid = uid;
@@ -24,7 +22,7 @@ public abstract class HeadToHeadRoom : Room {
 
     protected Dictionary<Client, Status> players = new();
 
-    public void AddPlayer(Client client) {
+    public virtual void AddPlayer(Client client) {
         players[client] = new Status(client.PlayerData.Uid);
     }
 
@@ -40,7 +38,7 @@ public abstract class HeadToHeadRoom : Room {
         return count;
     }
 
-    public void SendUJR() {
+    public virtual void SendUJR() {
         // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["UJR","287997","2","f66cc516-7ea3-40a5-9021-01ff8f290123","false","2","03a3ad99-87a5-4af4-8966-0b2733a05e0f","false","1"]},"r":287997}}
         List<string> info = new();
         info.Add("UJR"); // User Joined Room
@@ -53,7 +51,7 @@ public abstract class HeadToHeadRoom : Room {
         Send(packet);
     }
 
-    public void SendPA(Client client) {
+    public virtual void SendPA(Client client) {
         // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["UJR","287997","2","f66cc516-7ea3-40a5-9021-01ff8f290123","false","2","03a3ad99-87a5-4af4-8966-0b2733a05e0f","false","1"]},"r":287997}}
         List<string> info = new();
         info.Add("PA"); // Play Again

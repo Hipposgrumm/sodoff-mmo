@@ -22,9 +22,20 @@ public class GauntletRoom : HeadToHeadRoom {
         }
     }
 
+    protected class GauntletStatus : Status {
+        public string resultA = "";
+        public string resultB = "";
+
+        public GauntletStatus(string uid) : base(uid) {}
+    }
+
     public GauntletRoom() : base ("GauntletDO") {
         base.RoomVariables.Add(NetworkArray.VlElement("IS_RACE_ROOM", true));
         Name = Name.Replace('_', '-'); // Fix for Math Blaster (it doesn't like underscores)
+    }
+    
+    public override void AddPlayer(Client client) {
+        players[client] = new GauntletStatus(client.PlayerData.Uid);
     }
 
     protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
@@ -45,12 +56,14 @@ public class GauntletRoom : HeadToHeadRoom {
 
     public bool ProcessResult(Client client, string resultA, string resultB) {
         lock (base.roomLock) {
-            players[client].resultA = resultA;
-            players[client].resultB = resultB;
+            var clientStatus = (players[client] as GauntletStatus)!;
+            clientStatus.resultA = resultA;
+            clientStatus.resultB = resultB;
 
             int count = 0;
             foreach(var player in players) {
-                if (player.Value.resultB != "") ++count;
+                var status = (player.Value as GauntletStatus)!;
+                if (status.resultB != "") ++count;
             }
             if (count != 2)
                 return false;
@@ -60,11 +73,12 @@ public class GauntletRoom : HeadToHeadRoom {
             info.Add("GC");
             info.Add(base.Id.ToString());
             foreach(var player in players) {
-                if (player.Value.resultB == "")
+                var status = (player.Value as GauntletStatus)!;
+                if (status.resultB == "")
                     continue;
-                info.Add(player.Value.uid);
-                info.Add(player.Value.resultA);
-                info.Add(player.Value.resultB);
+                info.Add(status.uid);
+                info.Add(status.resultA);
+                info.Add(status.resultB);
                 info.Add("1");
             }
             NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
