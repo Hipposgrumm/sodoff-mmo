@@ -2,6 +2,7 @@ using System;
 using sodoffmmo.Data;
 
 namespace sodoffmmo.Core;
+
 public class AlienRiderRoom : HeadToHeadRoom {
     static object NextRoomLock = new object();
     static Dictionary<string, AlienRiderRoom?> NextRoom = new();
