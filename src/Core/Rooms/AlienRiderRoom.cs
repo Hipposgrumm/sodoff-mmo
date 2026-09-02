@@ -4,22 +4,11 @@ using sodoffmmo.Data;
 namespace sodoffmmo.Core;
 
 public class AlienRiderRoom : HeadToHeadRoom {
-    static object NextRoomLock = new object();
-    static Dictionary<string, AlienRiderRoom?> NextRoom = new();
-
-    public static AlienRiderRoom Get(string roomgroup) {
-        lock(NextRoomLock) {
-            if (
-                NextRoom.TryGetValue(roomgroup, out var ret) && ret != null &&
-                ret.ClientsCount == 1
-            ) {
-                NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
-                return ret;
-            } else {
-                var newRoom = new AlienRiderRoom();
-                NextRoom[roomgroup] = newRoom;
-                return newRoom;
-            }
+    private class AlienRiderMatchmakingHandler : MatchmakingHandler {
+        internal static readonly AlienRiderMatchmakingHandler instance = new();
+        protected override int _MaxPlayers => 2;
+        protected override HeadToHeadRoom CreateNewInstance(string roomgroup) {
+            return new AlienRiderRoom();
         }
     }
 
@@ -49,15 +38,7 @@ public class AlienRiderRoom : HeadToHeadRoom {
         }
     }
 
-    static object joinLock = new object();
-
     static public void Join(Client client, string roomgroup) {
-        lock(joinLock) {
-            AlienRiderRoom room = AlienRiderRoom.Get(roomgroup);
-
-            client.SetRoom(room);
-            room.AddPlayer(client);
-            room.SendUJR();
-        }
+        AlienRiderMatchmakingHandler.instance.Join(client, roomgroup);
     }
 }

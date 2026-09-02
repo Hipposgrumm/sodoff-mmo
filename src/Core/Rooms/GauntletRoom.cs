@@ -3,22 +3,11 @@ using sodoffmmo.Data;
 
 namespace sodoffmmo.Core;
 public class GauntletRoom : HeadToHeadRoom {
-    static object NextRoomLock = new object();
-    static Dictionary<string, GauntletRoom?> NextRoom = new();
-
-    public static GauntletRoom Get(string roomgroup) {
-        lock(NextRoomLock) {
-            if (
-                NextRoom.TryGetValue(roomgroup, out var ret) && ret != null &&
-                ret.ClientsCount == 1
-            ) {
-                NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
-                return ret;
-            } else {
-                var newRoom = new GauntletRoom();
-                NextRoom[roomgroup] = newRoom;
-                return newRoom;
-            }
+    private class GauntletMatchmakingHandler : MatchmakingHandler {
+        internal static readonly GauntletMatchmakingHandler instance = new();
+        protected override int _MaxPlayers => 2;
+        protected override HeadToHeadRoom CreateNewInstance(string roomgroup) {
+            return new GauntletRoom();
         }
     }
 
@@ -57,6 +46,11 @@ public class GauntletRoom : HeadToHeadRoom {
         "1" // Course
     ];
 
+    public override void RemoveClient(Client client) {
+        base.RemoveClient(client);
+        Joinable = true;
+    }
+
     public bool ProcessResult(Client client, string resultA, string resultB) {
         lock (base.roomLock) {
             var clientStatus = (players[client] as GauntletStatus)!;
@@ -90,14 +84,13 @@ public class GauntletRoom : HeadToHeadRoom {
             return true;
         }
     }
-
-    static object joinLock = new object();
-
+    
     // Keeping this here in case changing it breaks something.
+    static object joinLock = new object();
     static public void Join(Client client, GauntletRoom? room = null) {
         lock(joinLock) {
             if (room is null)
-                room = GauntletRoom.Get("GauntletDO");
+                room = (GauntletMatchmakingHandler.instance.Get("GauntletDO") as GauntletRoom)!;
 
             client.SetRoom(room);
             room.AddPlayer(client);
@@ -106,11 +99,6 @@ public class GauntletRoom : HeadToHeadRoom {
     }
 
     static public void Join(Client client, string roomgroup) {
-        lock(joinLock) {
-            GauntletRoom room = GauntletRoom.Get(roomgroup);
-            client.SetRoom(room);
-            room.AddPlayer(client); // client will be not removed from GauntletRoom.players ... after remove all client from room whole GauntletRoom.players will be removed
-            room.SendUJR();
-        }
+        GauntletMatchmakingHandler.instance.Join(client, roomgroup);
     }
 }

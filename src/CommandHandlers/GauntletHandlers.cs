@@ -66,6 +66,7 @@ class GauntletLobbyUserReadyHandler : CommandHandler
         room.Send(packet);
 
         if (room.GetReadyCount() > 1) {
+            room.OnGameStart();
             packet = Utils.ArrNetworkPacket(new string[] {
                 "LCDD", // Lobby CountDown Done
                 room.Id.ToString(),

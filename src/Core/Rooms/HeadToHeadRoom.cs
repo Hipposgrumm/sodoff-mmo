@@ -3,6 +3,8 @@
 namespace sodoffmmo.Core;
 
 public abstract class HeadToHeadRoom : Room {
+    protected bool Joinable = true;
+    
     public HeadToHeadRoom(string group) : base (null, group, true) {}
     
     protected abstract string[] WritePlayer(KeyValuePair<Client, Status> player);
@@ -38,6 +40,10 @@ public abstract class HeadToHeadRoom : Room {
             if (player.Value.isReady) ++count;
         }
         return count;
+    }
+
+    public virtual void OnGameStart() {
+        Joinable = false;
     }
 
     public virtual void SendUJR() {
@@ -78,5 +84,49 @@ public abstract class HeadToHeadRoom : Room {
         NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
 
         client.Send(packet);
+    }
+
+    protected abstract class MatchmakingHandler {
+        object NextRoomLock = new object();
+        Dictionary<string, SortedSet<HeadToHeadRoom>> RoomCollection = new();
+
+        protected abstract int _MaxPlayers { get; }
+
+        protected abstract HeadToHeadRoom CreateNewInstance(string roomgroup);
+
+        public HeadToHeadRoom Get(string roomgroup) {
+            lock(NextRoomLock) {
+                if (!RoomCollection.TryGetValue(roomgroup, out var rooms)) {
+                    rooms = new SortedSet<HeadToHeadRoom>(new RoomSorting());
+                    RoomCollection[roomgroup] = rooms;
+                }
+
+                rooms.RemoveWhere(r => r.IsRemoved);
+                foreach (var room in rooms) {
+                    if (room.Joinable && room.ClientsCount < _MaxPlayers) {
+                        return room;
+                    }
+                }
+                var newRoom = CreateNewInstance(roomgroup);
+                rooms.Add(newRoom);
+                return newRoom;
+            }
+        }
+        
+        object joinLock = new object();
+        public void Join(Client client, string roomgroup) {
+            lock(joinLock) {
+                HeadToHeadRoom room = Get(roomgroup);
+                client.SetRoom(room);
+                room.AddPlayer(client); // client will be not removed from HeadToHeadRoom.players ... after remove all client from room whole HeadToHeadRoom.players will be removed
+                room.SendUJR();
+            }
+        }
+        
+        private class RoomSorting : IComparer<Room> {
+            public int Compare(Room? x, Room? y) {
+                return (y?.Id ?? -1) - (x?.Id ?? -1);
+            }
+        }
     }
 }

@@ -4,22 +4,11 @@ using sodoffmmo.Data;
 namespace sodoffmmo.Core;
 
 public class FaceOffRoom : HeadToHeadRoom {
-    static object NextRoomLock = new object();
-    static Dictionary<string, FaceOffRoom?> NextRoom = new();
-
-    public static FaceOffRoom Get(string roomgroup) {
-        lock(NextRoomLock) {
-            if (
-                NextRoom.TryGetValue(roomgroup, out var ret) && ret != null &&
-                ret.ClientsCount == 1
-            ) {
-                NextRoom[roomgroup] = null; // probably more efficient than adding and removing every time
-                return ret;
-            } else {
-                var newRoom = new FaceOffRoom(roomgroup);
-                NextRoom[roomgroup] = newRoom;
-                return newRoom;
-            }
+    private class FaceOffMatchmakingHandler : MatchmakingHandler {
+        internal static readonly FaceOffMatchmakingHandler instance = new();
+        protected override int _MaxPlayers => 2;
+        protected override HeadToHeadRoom CreateNewInstance(string roomgroup) {
+            return new FaceOffRoom(roomgroup);
         }
     }
 
@@ -83,15 +72,7 @@ public class FaceOffRoom : HeadToHeadRoom {
         }
     }
 
-    static object joinLock = new object();
-
     static public void Join(Client client, string roomgroup) {
-        lock(joinLock) {
-            FaceOffRoom room = FaceOffRoom.Get(roomgroup);
-
-            client.SetRoom(room);
-            room.AddPlayer(client);
-            room.SendUJR();
-        }
+        FaceOffMatchmakingHandler.instance.Join(client, roomgroup);
     }
 }
