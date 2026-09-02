@@ -13,6 +13,7 @@ public class FaceOffRoom : HeadToHeadRoom {
     }
 
     protected class FaceOffStatus : Status {
+        public string petname;
         public string? trick;
 
         public FaceOffStatus(string uid) : base(uid) {}
@@ -27,12 +28,16 @@ public class FaceOffRoom : HeadToHeadRoom {
     protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
         player.Value.uid,
         player.Value.isReady.ToString(),
-        player.Key.PlayerData.DiplayName
+        (player.Value as FaceOffStatus)!.petname
     ];
 
     protected override string[] AddDataJoin() => [];
     protected override string[] AddDataLeave() => [];
     protected override string[] AddDataPlayAgain() => [];
+
+    public void AssignPetName(Client client, string petname) {
+        (players[client] as FaceOffStatus)!.petname = petname;
+    }
 
     public void SelectTrick(Client client, string trickname) {
         lock (base.roomLock) {

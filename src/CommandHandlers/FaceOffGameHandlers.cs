@@ -18,15 +18,18 @@ class FaceOffJoinRoomHandler : CommandHandler {
 [ExtensionCommandHandler("fog.FOPN")]
 class FaceOffPetNameHandler : CommandHandler {
     public override Task Handle(Client client, NetworkObject receivedObject) {
+        FaceOffRoom room = (client.Room as FaceOffRoom)!;
         NetworkObject p = receivedObject.Get<NetworkObject>("p");
+        string petname = p.Get<string>("0");
+        room.AssignPetName(client, petname);
         
         NetworkPacket packet = Utils.ArrNetworkPacket([
             "FOPN",
             client.PlayerData.Uid,
-            p.Get<string>("0")
-        ], "msg", client.Room!.Id);
+            petname
+        ], "msg", room.Id);
         
-        client.Room!.Send(packet);
+        room.Send(packet);
         return Task.CompletedTask;
     }
 }
