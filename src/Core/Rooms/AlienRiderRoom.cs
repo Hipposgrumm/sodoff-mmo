@@ -31,6 +31,7 @@ public class AlienRiderRoom : HeadToHeadRoom {
     ];
 
     protected override string[] AddDataJoin() => [];
+    protected override string[] AddDataLeave() => [];
     protected override string[] AddDataPlayAgain() => [];
 
     public bool ProcessResult(Client client) {

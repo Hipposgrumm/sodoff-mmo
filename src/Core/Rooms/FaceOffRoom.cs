@@ -42,6 +42,7 @@ public class FaceOffRoom : HeadToHeadRoom {
     ];
 
     protected override string[] AddDataJoin() => [];
+    protected override string[] AddDataLeave() => [];
     protected override string[] AddDataPlayAgain() => [];
 
     public void SelectTrick(Client client, string trickname) {

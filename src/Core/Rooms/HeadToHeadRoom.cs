@@ -9,6 +9,8 @@ public abstract class HeadToHeadRoom : Room {
     
     protected abstract string[] AddDataJoin();
     
+    protected abstract string[] AddDataLeave();
+    
     protected abstract string[] AddDataPlayAgain();
     
     protected class Status {
@@ -49,6 +51,20 @@ public abstract class HeadToHeadRoom : Room {
         NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
 
         Send(packet);
+    }
+
+    public override void RemoveClient(Client client) {
+        base.RemoveClient(client);
+        
+        List<string> info = new();
+        info.Add("ULR"); // User Left Room
+        info.AddRange(AddDataLeave());
+        info.Add(players[client].uid);
+        
+        NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
+        Send(packet);
+        
+        players.Remove(client);
     }
 
     public virtual void SendPA(Client client) {

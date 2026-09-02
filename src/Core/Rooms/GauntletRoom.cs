@@ -48,6 +48,9 @@ public class GauntletRoom : HeadToHeadRoom {
         base.Id.ToString(),
         "2" // Course
     ];
+    protected override string[] AddDataLeave() => [
+        base.Id.ToString()
+    ];
 
     protected override string[] AddDataPlayAgain() => [
         base.Id.ToString(),

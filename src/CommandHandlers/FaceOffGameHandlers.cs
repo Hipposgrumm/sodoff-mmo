@@ -20,17 +20,13 @@ class FaceOffPetNameHandler : CommandHandler {
     public override Task Handle(Client client, NetworkObject receivedObject) {
         NetworkObject p = receivedObject.Get<NetworkObject>("p");
         
-        NetworkPacket packet1 = Utils.ArrNetworkPacket([
+        NetworkPacket packet = Utils.ArrNetworkPacket([
             "FOPN",
             client.PlayerData.Uid,
             p.Get<string>("0")
         ], "msg", client.Room!.Id);
-        client.Room!.Send(packet1);
         
-        NetworkPacket packet2 = Utils.ArrNetworkPacket([
-            "LCDD"
-        ], "msg", client.Room!.Id);
-        //client.Room!.Send(packet2);
+        client.Room!.Send(packet);
         return Task.CompletedTask;
     }
 }

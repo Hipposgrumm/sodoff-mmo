@@ -58,7 +58,7 @@ public class Room {
         }
     }
 
-    public void RemoveClient(Client client) {
+    public virtual void RemoveClient(Client client) {
         lock (roomLock) {
             clients.Remove(client);
             if (AutoRemove && ClientsCount == 0) {
