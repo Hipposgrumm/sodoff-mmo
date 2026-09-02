@@ -97,6 +97,25 @@ class GauntletLobbyUserNotReadyHandler : CommandHandler
     }
 }
 
+// Relay Course Lobby Data
+[ExtensionCommandHandler("gs.RLCD")]
+class GauntletCourseChangedHandler : CommandHandler
+{
+    public override Task Handle(Client client, NetworkObject receivedObject) {
+        GauntletRoom room = (client.Room as GauntletRoom)!;
+        NetworkObject p = receivedObject.Get<NetworkObject>("p");
+
+        NetworkPacket packet = Utils.ArrNetworkPacket(new string[] {
+            "RLCD",
+            room.Id.ToString(),
+            p.Get<string>("0")
+        }, "msg", room.Id);
+
+        room.Send(packet);
+        return Task.CompletedTask;
+    }
+}
+
 // Game Level Load
 [ExtensionCommandHandler("gs.GLL")]
 class GauntletLevelLoadHandler : CommandHandler
@@ -105,13 +124,16 @@ class GauntletLevelLoadHandler : CommandHandler
         GauntletRoom room = (client.Room as GauntletRoom)!;
         NetworkObject p = receivedObject.Get<NetworkObject>("p");
         
-        NetworkPacket packet = Utils.ArrNetworkPacket(new string[] {
+        List<string> data = [
             "GLL", // Game CountDown Start
-            room.Id.ToString(),
-            p.Get<string>("0"),
-            p.Get<string>("1"),
-            p.Get<string>("2") // TODO use size of p.fields - 1
-        }, "msg", room.Id);
+            room.Id.ToString()
+        ];
+        for (int i=0;;i++) {
+            string? piece = p.Get<string?>(i.ToString());
+            if (piece == null) break;
+            data.Add(piece);
+        }
+        NetworkPacket packet = Utils.ArrNetworkPacket(data.ToArray(), "msg", room.Id);
         room.Send(packet);
         return Task.CompletedTask;
     }
