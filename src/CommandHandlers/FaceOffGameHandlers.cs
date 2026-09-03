@@ -51,8 +51,7 @@ class FaceOffLobbyUserReadyHandler : CommandHandler {
         if (room.GetReadyCount() > 1) {
             room.OnGameStart();
             packet = Utils.ArrNetworkPacket([
-                "LCDD", // Lobby CountDown Done
-                client.PlayerData.Uid
+                "LCDD" // Lobby CountDown Done
             ], "msg", room.Id);
             
             room.Send(packet);

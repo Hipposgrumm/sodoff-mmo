@@ -21,9 +21,7 @@ public class FaceOffRoom : HeadToHeadRoom {
 
     public FaceOffRoom(string roomname) : base(roomname) {}
     
-    public override void AddPlayer(Client client) {
-        players[client] = new FaceOffStatus(client.PlayerData.Uid);
-    }
+    protected override Status CreateStatus(Client client) => new FaceOffStatus(client.PlayerData.Uid);
 
     protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
         player.Value.uid,

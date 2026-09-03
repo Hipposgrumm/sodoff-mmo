@@ -26,8 +26,13 @@ public abstract class HeadToHeadRoom : Room {
 
     protected Dictionary<Client, Status> players = new();
 
-    public virtual void AddPlayer(Client client) {
-        players[client] = new Status(client.PlayerData.Uid);
+    public Client? Host { get; protected set; } = null;
+
+    protected virtual Status CreateStatus(Client client) => new Status(client.PlayerData.Uid);
+
+    public void AddPlayer(Client client) {
+        players[client] = CreateStatus(client);
+        if (Host == null) Host = client;
     }
 
     public void SetPlayerReady(Client client, bool status = true) {
@@ -71,6 +76,11 @@ public abstract class HeadToHeadRoom : Room {
         Send(packet);
         
         players.Remove(client);
+        
+        if (client == Host) {
+            if (players.Count == 0) Host = null;
+            else Host = players.First().Key;
+        }
     }
 
     public virtual void SendPA(Client client) {

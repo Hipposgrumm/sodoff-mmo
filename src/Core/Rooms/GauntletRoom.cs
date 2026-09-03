@@ -23,9 +23,7 @@ public class GauntletRoom : HeadToHeadRoom {
         Name = Name.Replace('_', '-'); // Fix for Math Blaster (it doesn't like underscores)
     }
     
-    public override void AddPlayer(Client client) {
-        players[client] = new GauntletStatus(client.PlayerData.Uid);
-    }
+    protected override Status CreateStatus(Client client) => new GauntletStatus(client.PlayerData.Uid);
 
     protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
         player.Value.uid,

@@ -35,7 +35,7 @@ class SnatchItLobbyUserReadyHandler : CommandHandler {
             packet = Utils.ArrNetworkPacket([
                 "LCDD", // Lobby CountDown Done
                 room.Id.ToString(),
-                client.PlayerData.Uid
+                (room.Host ?? client).PlayerData.Uid
             ], "msg", room.Id);
             
             room.Send(packet);

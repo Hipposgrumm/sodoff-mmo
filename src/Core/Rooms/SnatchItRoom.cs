@@ -22,10 +22,8 @@ public class SnatchItRoom : HeadToHeadRoom {
     }
 
     public SnatchItRoom(string roomname) : base(roomname) {}
-    
-    public override void AddPlayer(Client client) {
-        players[client] = new SnatchItStatus(client.PlayerData.Uid);
-    }
+
+    protected override Status CreateStatus(Client client) => new SnatchItStatus(client.PlayerData.Uid);
 
     protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
         player.Value.uid,
