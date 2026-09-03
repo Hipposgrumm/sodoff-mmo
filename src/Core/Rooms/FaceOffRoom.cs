@@ -13,7 +13,7 @@ public class FaceOffRoom : HeadToHeadRoom {
     }
 
     protected class FaceOffStatus : Status {
-        public string petname;
+        public string petname = "";
         public string? trick;
 
         public FaceOffStatus(string uid) : base(uid) {}

@@ -13,7 +13,7 @@ public class SnatchItRoom : HeadToHeadRoom {
     }
 
     protected class SnatchItStatus : Status {
-        public string petname;
+        public string petname = "";
 
         public string? resultScore = null;
         public string? resultCollectCount = null;
