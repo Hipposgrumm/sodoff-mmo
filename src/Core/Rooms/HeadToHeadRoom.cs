@@ -50,6 +50,8 @@ public abstract class HeadToHeadRoom : Room {
 
     public virtual void OnGameStart() {
         Joinable = false;
+        foreach (var player in players)
+            player.Value.isReady = false;
     }
 
     public virtual bool OnClientGameLoaded(Client client) {
@@ -113,6 +115,16 @@ public abstract class HeadToHeadRoom : Room {
         NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
 
         client.Send(packet);
+        
+        // Send all players unreadied.
+        foreach(var player in players) {
+            NetworkPacket unreadypacket = Utils.ArrNetworkPacket([
+                "LUNR",
+                base.Id.ToString(),
+                client.PlayerData.Uid
+            ], "msg", base.Id);
+            client.Send(unreadypacket);
+        }
     }
 
     protected abstract class MatchmakingHandler {

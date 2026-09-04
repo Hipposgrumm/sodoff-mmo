@@ -37,13 +37,6 @@ class GauntletPlayAgainHandler : CommandHandler
         GauntletRoom room = (client.Room as GauntletRoom)!;
         room.SetPlayerReady(client, false);
 
-        NetworkPacket packet = Utils.ArrNetworkPacket(new string[] {
-            "LUNR",
-            room.Id.ToString(),
-            client.PlayerData.Uid
-        }, "msg", room.Id);
-
-        room.Send(packet, client);
         room.SendPA(client);
         return Task.CompletedTask;
     }
