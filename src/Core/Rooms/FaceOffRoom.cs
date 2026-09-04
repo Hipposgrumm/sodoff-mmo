@@ -23,7 +23,7 @@ public class FaceOffRoom : HeadToHeadRoom {
     
     protected override Status CreateStatus(Client client) => new FaceOffStatus(client.PlayerData.Uid);
 
-    protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
+    protected override string[] WritePlayer(KeyValuePair<Client, Status> player, bool isJoin) => [
         player.Value.uid,
         player.Value.isReady.ToString(),
         (player.Value as FaceOffStatus)!.petname

@@ -14,7 +14,7 @@ public class AlienRiderRoom : HeadToHeadRoom {
 
     public AlienRiderRoom() : base("AlienRider") {}
 
-    protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
+    protected override string[] WritePlayer(KeyValuePair<Client, Status> player, bool isJoin) => [
         player.Value.uid,
         player.Value.isReady.ToString()
     ];

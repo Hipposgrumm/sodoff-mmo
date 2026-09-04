@@ -63,6 +63,9 @@ public class PlayerData {
         "CLU", // group/clan (newer)
         "SPM", // drive mode (Eat My Dust)
         "H",   // health
+        "TS",  // Target Speed (Nebula Knockout)
+        "UPV", // User Position (Nebula Knockout)
+        "URV", // User Rotation (Nebula Knockout)
     };
 
     // other variables (set and updated via SUV command)

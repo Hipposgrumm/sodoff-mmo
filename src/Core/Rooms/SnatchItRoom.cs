@@ -25,7 +25,7 @@ public class SnatchItRoom : HeadToHeadRoom {
 
     protected override Status CreateStatus(Client client) => new SnatchItStatus(client.PlayerData.Uid);
 
-    protected override string[] WritePlayer(KeyValuePair<Client, Status> player) => [
+    protected override string[] WritePlayer(KeyValuePair<Client, Status> player, bool isJoin) => [
         player.Value.uid,
         player.Value.isReady.ToString(),
         (player.Value as SnatchItStatus)!.petname+'/'

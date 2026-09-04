@@ -7,7 +7,7 @@ public abstract class HeadToHeadRoom : Room {
     
     public HeadToHeadRoom(string group) : base (null, group, true) {}
     
-    protected abstract string[] WritePlayer(KeyValuePair<Client, Status> player);
+    protected abstract string[] WritePlayer(KeyValuePair<Client, Status> player, bool isJoin);
     
     protected abstract string[] AddDataJoin();
     
@@ -78,7 +78,7 @@ public abstract class HeadToHeadRoom : Room {
         info.Add("UJR"); // User Joined Room
         info.AddRange(AddDataJoin());
         foreach(var player in players) {
-            info.AddRange(WritePlayer(player));
+            info.AddRange(WritePlayer(player, true));
         }
         NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
 
@@ -110,7 +110,7 @@ public abstract class HeadToHeadRoom : Room {
         info.Add("PA"); // Play Again
         info.AddRange(AddDataPlayAgain());
         foreach(var player in players) {
-            info.AddRange(WritePlayer(player));
+            info.AddRange(WritePlayer(player, false));
         }
         NetworkPacket packet = Utils.ArrNetworkPacket(info.ToArray(), "msg", base.Id);
 
