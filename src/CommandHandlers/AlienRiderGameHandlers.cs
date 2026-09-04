@@ -62,13 +62,13 @@ class AlienRiderLobbyUserNotReadyHandler : CommandHandler  {
 class AlienRiderLevelLoadedHandler : CommandHandler {
     public override Task Handle(Client client, NetworkObject receivedObject) {
         AlienRiderRoom room = (client.Room as AlienRiderRoom)!;
-        
-        NetworkPacket packet = Utils.ArrNetworkPacket([
-            "GS", // Game Start
-            room.Id.ToString()
-        ], "msg", room.Id);
-        room.Send(packet);
-        
+        if (room.OnClientGameLoaded(client)) {
+            NetworkPacket packet = Utils.ArrNetworkPacket([
+                "GS", // Game Start
+                room.Id.ToString()
+            ], "msg", room.Id);
+            room.Send(packet);
+        }
         return Task.CompletedTask;
     }
 }

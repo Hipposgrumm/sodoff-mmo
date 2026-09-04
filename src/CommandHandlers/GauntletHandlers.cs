@@ -150,20 +150,22 @@ class GauntletLevelLoadedHandler : CommandHandler
 
     public override Task Handle(Client client, NetworkObject receivedObject) {
         room = (client.Room as GauntletRoom)!;
-        counter = 5;
-        
-        // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["GCDS","365587","4"]},"r":365587}}
-        NetworkPacket packet = Utils.ArrNetworkPacket(new string[] {
-            "GCDS", // Game CountDown Start
-            room.Id.ToString(),
-            (--counter).ToString()
-        }, "msg", room.Id);
-        room.Send(packet);
-        
-        timer = new System.Timers.Timer(1500);
-        timer.AutoReset = true;
-        timer.Enabled = true;
-        timer.Elapsed += OnTick;
+        if (room.OnClientGameLoaded(client)) {
+            counter = 5;
+            
+            // {"a":13,"c":1,"p":{"c":"msg","p":{"arr":["GCDS","365587","4"]},"r":365587}}
+            NetworkPacket packet = Utils.ArrNetworkPacket(new string[] {
+                "GCDS", // Game CountDown Start
+                room.Id.ToString(),
+                (--counter).ToString()
+            }, "msg", room.Id);
+            room.Send(packet);
+            
+            timer = new System.Timers.Timer(1500);
+            timer.AutoReset = true;
+            timer.Enabled = true;
+            timer.Elapsed += OnTick;
+        }
         return Task.CompletedTask;
     }
 

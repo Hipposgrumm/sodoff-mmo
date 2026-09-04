@@ -18,6 +18,7 @@ public abstract class HeadToHeadRoom : Room {
     protected class Status {
         public string uid;
         public bool isReady = false;
+        public bool gameLoaded = false;
 
         public Status(string uid) {
             this.uid = uid;
@@ -49,6 +50,24 @@ public abstract class HeadToHeadRoom : Room {
 
     public virtual void OnGameStart() {
         Joinable = false;
+    }
+
+    public virtual bool OnClientGameLoaded(Client client) {
+        players[client].gameLoaded = true;
+        bool allClientsGameLoaded = true;
+        foreach (var player in players) {
+            if (!player.Value.gameLoaded) {
+                allClientsGameLoaded = false;
+                break;
+            }
+        }
+        if (allClientsGameLoaded) {
+            // reset value for all
+            foreach (var player in players) {
+                player.Value.gameLoaded = false;
+            }
+        }
+        return allClientsGameLoaded;
     }
 
     public virtual void SendUJR() {

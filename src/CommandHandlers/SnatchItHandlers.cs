@@ -75,6 +75,8 @@ class SnatchItLevelLoadHandler : CommandHandler {
             p.Get<string>("0")
         ], "msg", room.Id);
         room.Send(packet);
+        
+        if (room.OnClientGameLoaded(client)) SnatchItLevelLoadedHandler.StartTimer(room);
         return Task.CompletedTask;
     }
 }
@@ -82,13 +84,16 @@ class SnatchItLevelLoadHandler : CommandHandler {
 // Game Level Loaded
 [ExtensionCommandHandler("si.GLLD")]
 class SnatchItLevelLoadedHandler : CommandHandler  {
-    private System.Timers.Timer? timer = null;
-    private int counter;
-    private SnatchItRoom room;
 
     public override Task Handle(Client client, NetworkObject receivedObject) {
-        room = (client.Room as SnatchItRoom)!;
-        counter = 5;
+        SnatchItRoom room = (client.Room as SnatchItRoom)!;
+        if (room.OnClientGameLoaded(client)) StartTimer(room);
+        return Task.CompletedTask;
+    }
+
+
+    internal static void StartTimer(SnatchItRoom room) {
+        int counter = 5;
         
         NetworkPacket packet = Utils.ArrNetworkPacket([
             "GCDS", // Game CountDown Start
@@ -96,33 +101,29 @@ class SnatchItLevelLoadedHandler : CommandHandler  {
             (--counter).ToString()
         ], "msg", room.Id);
         room.Send(packet);
-        
-        timer = new System.Timers.Timer(1500);
+
+        System.Timers.Timer timer = new System.Timers.Timer(1500);
         timer.AutoReset = true;
         timer.Enabled = true;
-        timer.Elapsed += OnTick;
-        return Task.CompletedTask;
-    }
-
-    private void OnTick(Object? source, ElapsedEventArgs e) {
-        NetworkPacket packet;
-        if (--counter > 0) {
-            packet = Utils.ArrNetworkPacket([
-                "GCDU", // Game CountDown Update
-                room.Id.ToString(),
-                counter.ToString()
-            ], "msg", room.Id);
-        } else {
-            packet = Utils.ArrNetworkPacket([
-                "GS", // Game Start
-                room.Id.ToString()
-            ], "msg", room.Id);
+        timer.Elapsed += (source, e) => {
+            NetworkPacket packet;
+            if (--counter > 0) {
+                packet = Utils.ArrNetworkPacket([
+                    "GCDU", // Game CountDown Update
+                    room.Id.ToString(),
+                    counter.ToString()
+                ], "msg", room.Id);
+            } else {
+                packet = Utils.ArrNetworkPacket([
+                    "GS", // Game Start
+                    room.Id.ToString()
+                ], "msg", room.Id);
             
-            timer!.Stop();
-            timer!.Close();
-            timer = null;
-        }
-        room.Send(packet);
+                timer.Stop();
+                timer.Close();
+            }
+            room.Send(packet);
+        };
     }
 }
 

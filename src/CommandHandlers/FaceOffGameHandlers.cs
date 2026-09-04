@@ -82,13 +82,13 @@ class FaceOffLobbyUserNotReadyHandler : CommandHandler  {
 class FaceOffLevelLoadedHandler : CommandHandler {
     public override Task Handle(Client client, NetworkObject receivedObject) {
         FaceOffRoom room = (client.Room as FaceOffRoom)!;
-        
-        NetworkPacket packet = Utils.ArrNetworkPacket([
-            "GS", // Game Start
-            room.Id.ToString()
-        ], "msg", room.Id);
-        room.Send(packet);
-        
+        if (room.OnClientGameLoaded(client)) {
+            NetworkPacket packet = Utils.ArrNetworkPacket([
+                "GS", // Game Start
+                room.Id.ToString()
+            ], "msg", room.Id);
+            room.Send(packet);
+        }
         return Task.CompletedTask;
     }
 }
