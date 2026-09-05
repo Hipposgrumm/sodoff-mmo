@@ -242,6 +242,9 @@ class BattleGameSetDamageAttackHandler : CommandHandler {
     public override Task Handle(Client client, NetworkObject receivedObject) {
         BattleGameRoom room = (client.Room as BattleGameRoom)!;
         NetworkObject p = receivedObject.Get<NetworkObject>("p");
+        
+        var state = room.GetState(client);
+        state.UseSuperAttack(); // Note: May cause issues if we ever add a check to make sure the player has enough super attack, but it's fine for now.
 
         NetworkPacket packet = Utils.ArrNetworkPacket([
             "DA",
