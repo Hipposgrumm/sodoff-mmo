@@ -30,6 +30,7 @@ public class Server {
         listener.Bind(new IPEndPoint(ipAddress, port));
 
         SpecialRoom.CreateRooms();
+        BroomballRoom.CreateRootRoom("BroomStickArena");
 
         await Listen(listener);
     }

@@ -40,6 +40,10 @@ internal sealed class ServerConfiguration {
     public float AmbassadorGaugePlayers { get; set; } = 0.5f;
     public int RacingMaxPlayers { get; set; } = 6;
     public int RacingMinPlayers { get; set; } = 2;
+    public int BroomballMaxPlayers { get; set; } = 12;
+    public int BroomballMinPlayers { get; set; } = 2;
+    public string[] BroomballWaitingMessages_Players { get; set; } = [];
+    public string[] BroomballWaitingMessages_Ongoing { get; set; } = [];
     public int RacingMainLobbyTimer { get; set; } = 15;
     public int PingDelay { get; set; } = 17;
     public bool EnableChat { get; set; } = true;
