@@ -236,6 +236,8 @@ public class BroomballRoom : Room {
         base.Send(packet);
         GameOngoing = false;
         Players.Clear();
+        TEAM_RED.Reset();
+        TEAM_BLUE.Reset();
 
         lock (Waitlist_Lock) {
             foreach (var client in Waitlist) {
